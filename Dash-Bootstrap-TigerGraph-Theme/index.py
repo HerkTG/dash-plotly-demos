@@ -7,6 +7,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import src.components.navbar as nb
 import src.components.sidebar as sb
+import pyTigerGraph as tg
 import src.pages.page1 as p1
 from dash.dependencies import Input, Output, State
 
@@ -20,6 +21,29 @@ app = dash.Dash(external_stylesheets=[dbc.themes.LUX, FA])
 navbar = nb.get_navbar()
 sidebar = sb.get_sidebar()
 page1 = p1.get_page1()
+
+
+'''
+TigerGraph Connection Parameters:
+'''
+
+hostname = "https://payment-fraud.i.tgcloud.io"
+username = "tigergraph"
+graphname = "MyGraph"
+password = "tigergraph"
+
+
+conn = tg.TigerGraphConnection(host=hostname,
+                                  graphname=graphname,
+                                  username=username,
+                                  password=password, 
+                                  useCert=True)
+
+secret = conn.createSecret()
+token = conn.getToken(secret, setToken=True)
+
+print(conn.gsql('ls'))
+
 
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
@@ -54,7 +78,7 @@ def render_page_content(pathname):
     elif pathname == "/page-2":
         return html.P("This is the content of page 2. Yay!")
     elif pathname == "/page-3":
-        return html.P("Oh cool, this is page 3!")
+        return html.P(print(conn.gsql('ls')))
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
