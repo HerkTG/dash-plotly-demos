@@ -8,6 +8,7 @@ import dash_html_components as html
 import src.components.navbar as nb
 import src.components.sidebar as sb
 import src.pages.page1 as p1
+import src.pages.page2 as p2
 from dash.dependencies import Input, Output, State
 
 # link fontawesome to get the chevron icons
@@ -20,6 +21,7 @@ app = dash.Dash(external_stylesheets=[dbc.themes.LUX, FA])
 navbar = nb.get_navbar()
 sidebar = sb.get_sidebar()
 page1 = p1.get_page1()
+page2 = p2.get_page2()
 
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
@@ -52,7 +54,7 @@ def render_page_content(pathname):
     if pathname in ["/", "/page-1"]:
         return html.P(page1)
     elif pathname == "/page-2":
-        return html.P("This is the content of page 2. Yay!")
+        return html.P(page2)
     elif pathname == "/page-3":
         return html.P("Oh cool, this is page 3!")
     # If the user tries to reach a different page, return a 404 message
@@ -66,4 +68,4 @@ def render_page_content(pathname):
 
 
 if __name__ == "__main__":
-    app.run_server(port=8888)
+    app.run_server(port=8886)
