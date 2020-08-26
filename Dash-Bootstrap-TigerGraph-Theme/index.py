@@ -1,5 +1,5 @@
 """
-This is a basic multi-page Dash app using Bootstrap. 
+This is a basic multi-page Dash app using Bootstrap.
 """
 import dash
 import dash_bootstrap_components as dbc
@@ -8,6 +8,7 @@ import dash_html_components as html
 import src.components.navbar as nb
 import src.components.sidebar as sb
 import pyTigerGraph as tg
+import json
 import src.pages.page1 as p1
 from dash.dependencies import Input, Output, State
 
@@ -31,18 +32,19 @@ hostname = "https://payment-fraud.i.tgcloud.io"
 username = "tigergraph"
 graphname = "MyGraph"
 password = "tigergraph"
+# conn = None
+try:
+    conn = tg.TigerGraphConnection(host=hostname,
+                                   graphname=graphname,
+                                   username=username,
+                                   password=password,
+                                   useCert=True)
+    secret = conn.createSecret()
+    token = conn.getToken(secret, setToken=True)
 
-
-conn = tg.TigerGraphConnection(host=hostname,
-                                  graphname=graphname,
-                                  username=username,
-                                  password=password, 
-                                  useCert=True)
-
-secret = conn.createSecret()
-token = conn.getToken(secret, setToken=True)
-
-print(conn.gsql('ls'))
+    # print(conn.gsql('ls'))
+except Exception as e:
+    print('There was an error. Make sure to start your box and try again')
 
 
 # the styles for the main content position it to the right of the sidebar and
@@ -71,6 +73,19 @@ def toggle_active_links(pathname):
     return [pathname == f"/page-{i}" for i in range(1, 4)]
 
 
+@app.callback(Output("userIdOutput", "children"), [Input(component_id="userIdSubmit", component_property="n_clicks")], [State("userId", "value")])
+def output_text(n_clicks, userID):
+    if n_clicks != 0:
+        try:
+            q = conn.runInstalledQuery("getUserInfo", {'userID': userID})
+            q = json.load(q)
+            return [html.Br(), html.P(q)]
+        except Exception as e:
+            return [html.Br(), html.P("Please enter Valid Patient ID", style={'color': 'red'})]
+    else:
+        return
+
+
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname in ["/", "/page-1"]:
@@ -78,7 +93,7 @@ def render_page_content(pathname):
     elif pathname == "/page-2":
         return html.P("This is the content of page 2. Yay!")
     elif pathname == "/page-3":
-        return html.P(print(conn.gsql('ls')))
+        return html.P(conn.gsql('ls'))
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
