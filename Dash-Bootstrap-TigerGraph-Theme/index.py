@@ -5,10 +5,13 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table
 import src.components.navbar as nb
 import src.components.sidebar as sb
 import pyTigerGraph as tg
+import plotly.express as px
 import json
+import pandas as pd
 import src.pages.page1 as p1
 from dash.dependencies import Input, Output, State
 
@@ -47,6 +50,46 @@ except Exception as e:
     print('There was an error. Make sure to start your box and try again')
 
 
+def getUserInfo(userID):
+    q = conn.runInstalledQuery("getUserInfo", {'userID': userID})
+    userAccount = q[0]['S1'][0]['v_id']
+    # userEmail = q[0]['S1'][1]['v_id']
+    userEmail = ""
+    userPhone = ""
+    for x in q[0]['S1']:
+        if x['v_type'] == 'phone_number':
+            userPhone = x['v_id']
+        if x['v_type'] == 'email':
+            userEmail = x['v_id']
+    userCreatedDate = q[0]['S1'][0]['attributes']['created_date']
+    return [
+        html.Br(),
+        html.P(f"User Account Name: {userAccount}", style={'color': 'black'}),
+        html.P(f"User Account Email: {userEmail}", style={'color': 'black'}),
+        html.P(f"User Account Phone Number: {userPhone}", style={'color': 'black'}),
+        html.P(f"User Account Created Date: {userCreatedDate}", style={'color': 'black'}),
+    ]
+
+
+def getUserDates(bank):
+    q = conn.runInstalledQuery("getBankAccounts", {'bankName': bank})
+    print('works')
+    userNums = []
+    userDates = []
+    count = 1
+    for x in q[0]['results']:
+        userDates.append(x['attributes']['created_date'])
+        userNums.append(count)
+        count += 1
+    print('works2')
+    df = pd.DataFrame(list(zip(userNums, userDates)), columns=['count', 'date'])
+    print('works3')
+    fig = px.line(df, x='date', y='count', title='Number of Users')
+    fig.update_xaxes(rangeslider_visible=True)
+    print('works4')
+    return dcc.Graph(figure=fig)
+
+
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
 CONTENT_STYLE = {
@@ -77,9 +120,16 @@ def toggle_active_links(pathname):
 def output_text(n_clicks, userID):
     if n_clicks != 0:
         try:
-            q = conn.runInstalledQuery("getUserInfo", {'userID': userID})
-            q = json.load(q)
-            return [html.Br(), html.P(q)]
+            # df = pd.DataFrame(q[0]['S1'])
+            # print(q[0]['S1'][0]['attributes']['created_date'])
+            # value = q[0]['S1'][0]['attributes']['created_date']
+            # return dash_table.DataTable(
+            #     id='table',
+            #     columns=[{'name': i, "id": i} for i in df.columns],
+            #     data=df.to_dict('records'),
+            # )
+            # return getUserInfo(userID)
+            return getUserDates(userID)
         except Exception as e:
             return [html.Br(), html.P("Please enter Valid Patient ID", style={'color': 'red'})]
     else:
