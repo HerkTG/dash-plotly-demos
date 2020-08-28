@@ -13,6 +13,9 @@ import plotly.express as px
 import json
 import pandas as pd
 import src.pages.page1 as p1
+import src.pages.page2 as p2
+import src.pages.kepler_page as kepler
+import src.pages.callbackPage as callbackPage
 from dash.dependencies import Input, Output, State
 
 # link fontawesome to get the chevron icons
@@ -25,6 +28,9 @@ app = dash.Dash(external_stylesheets=[dbc.themes.LUX, FA])
 navbar = nb.get_navbar()
 sidebar = sb.get_sidebar()
 page1 = p1.get_page1()
+page2 = p2.get_page2()
+kepler_page = kepler.get_page()
+callbackPage = callbackPage.get_page()
 
 
 '''
@@ -73,7 +79,6 @@ def getUserInfo(userID):
 
 def getUserDates(bank):
     q = conn.runInstalledQuery("getBankAccounts", {'bankName': bank})
-    print('works')
     userNums = []
     userDates = []
     count = 1
@@ -81,12 +86,9 @@ def getUserDates(bank):
         userDates.append(x['attributes']['created_date'])
         userNums.append(count)
         count += 1
-    print('works2')
     df = pd.DataFrame(list(zip(userNums, userDates)), columns=['count', 'date'])
-    print('works3')
     fig = px.line(df, x='date', y='count', title='Number of Users')
     fig.update_xaxes(rangeslider_visible=True)
-    print('works4')
     return dcc.Graph(figure=fig)
 
 
@@ -106,14 +108,14 @@ app.layout = html.Div([dcc.Location(id="url"), navbar, sidebar, content])
 # this callback uses the current pathname to set the active state of the
 # corresponding nav link to true, allowing users to tell see page they are on
 @app.callback(
-    [Output(f"page-{i}-link", "active") for i in range(1, 4)],
+    [Output(f"page-{i}-link", "active") for i in range(1, 6)],
     [Input("url", "pathname")],
 )
 def toggle_active_links(pathname):
     if pathname == "/":
         # Treat page 1 as the homepage / index
-        return True, False, False
-    return [pathname == f"/page-{i}" for i in range(1, 4)]
+        return True, False, False, False
+    return [pathname == f"/page-{i}" for i in range(1, 6)]
 
 
 @app.callback(Output("userIdOutput", "children"), [Input(component_id="userIdSubmit", component_property="n_clicks")], [State("userId", "value")])
@@ -136,14 +138,35 @@ def output_text(n_clicks, userID):
         return
 
 
+options = ['Get Bank Info', 'Get User Info']
+bank_options = ['Visa', 'Bank of America', 'Mastercard', 'American Express 95']
+
+
+@app.callback(Output('bank-options', 'options'), [Input('query-options-radio', 'value')])
+def set_bank_options(selected_value):
+    if selected_value == 'Get Bank Info':
+        return [{'label': i, 'value': i} for i in bank_options]
+    else:
+        return html.P('User')
+
+
+@app.callback(Output('bank-options', 'value'), [Input('bank-options', 'options')])
+def set_bank_value(available_options):
+    return available_options[0]['value']
+
+
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname in ["/", "/page-1"]:
         return html.P(page1)
     elif pathname == "/page-2":
-        return html.P("This is the content of page 2. Yay!")
+        return html.P(page2)
     elif pathname == "/page-3":
         return html.P(conn.gsql('ls'))
+    elif pathname == "/page-4":
+        return kepler_page
+    elif pathname == "/page-5":
+        return callbackPage
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [

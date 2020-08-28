@@ -137,5 +137,6 @@ page1 = html.Div(
     ]
 )
 
+
 def get_page1():
     return page1

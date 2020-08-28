@@ -1,5 +1,5 @@
 """
-This is a basic multi-page Dash app using Bootstrap. 
+This is a basic multi-page Dash app using Bootstrap.
 """
 import dash
 import dash_bootstrap_components as dbc
@@ -9,7 +9,10 @@ import src.components.navbar as nb
 import src.components.sidebar as sb
 import src.pages.page1 as p1
 import src.pages.page2 as p2
+import src.pages.page3 as p3
 from dash.dependencies import Input, Output, State
+import plotly.express as px
+import pandas as pd
 
 # link fontawesome to get the chevron icons
 FA = "https://use.fontawesome.com/releases/v5.8.1/css/all.css"
@@ -22,6 +25,7 @@ navbar = nb.get_navbar()
 sidebar = sb.get_sidebar()
 page1 = p1.get_page1()
 page2 = p2.get_page2()
+interactivePage = p3.get_page()
 
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
@@ -39,14 +43,30 @@ app.layout = html.Div([dcc.Location(id="url"), navbar, sidebar, content])
 # this callback uses the current pathname to set the active state of the
 # corresponding nav link to true, allowing users to tell see page they are on
 @app.callback(
-    [Output(f"page-{i}-link", "active") for i in range(1, 4)],
+    [Output(f"page-{i}-link", "active") for i in range(1, 5)],
     [Input("url", "pathname")],
 )
 def toggle_active_links(pathname):
     if pathname == "/":
         # Treat page 1 as the homepage / index
-        return True, False, False
-    return [pathname == f"/page-{i}" for i in range(1, 4)]
+        return True, False, False, False
+    return [pathname == f"/page-{i}" for i in range(1, 5)]
+
+
+df = pd.read_csv(
+    'https://raw.githubusercontent.com/plotly/datasets/master/gapminderDataFiveYear.csv')
+
+
+@app.callback(Output('graph-with-slider', 'figure'), [Input('year-slider', 'value')])
+def update_figure(selected_year):
+    filtered_df = df[df.year == selected_year]
+    fig = px.scatter(filtered_df, x="gdpPercap", y="lifeExp",
+                     size="pop", color="continent", hover_name="country",
+                     log_x=True, size_max=55)
+
+    fig.update_layout(transition_duration=500)
+
+    return fig
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
@@ -57,6 +77,8 @@ def render_page_content(pathname):
         return html.P(page2)
     elif pathname == "/page-3":
         return html.P("Oh cool, this is page 3!")
+    elif pathname == "/page-4":
+        return html.P(interactivePage)
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
