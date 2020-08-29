@@ -9,12 +9,15 @@ bank_options = ['Visa', 'Bank of America', 'Mastercard', 'American Express 95']
 callbackPage = html.Div(
     [
         html.H2("Dash Callbacks"),
-        dcc.RadioItems(
+        dcc.Dropdown(
             id='query-options-radio',
             options=[{'label': k, 'value': k} for k in options],
-            value='Get Bank Info'
+            value='Get Bank Info',
+            searchable=False,
         ),
-        dcc.RadioItems(id='bank-options'),
+        # dcc.RadioItems(id='bank-options'),
+        html.Br(),
+        html.Div(id='display-result'),
         html.Div(id='user-input-dropdown'),
         html.Div(id='display-bank-options')
     ]
