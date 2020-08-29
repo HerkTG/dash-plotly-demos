@@ -12,11 +12,11 @@ import urllib.request
 from pandas.tseries.offsets import *
 
 
-url = "https://docs.mapbox.com/help/data/stations.geojson"
-download_file = urllib.request.urlretrieve(url, "stations.geojson")
+url = "https://raw.githubusercontent.com/uber-web/kepler.gl-data/master/earthquakes/data.csv"
+download_file = urllib.request.urlretrieve(url, "data.csv")
 
 def make_kepler_plot():
-    map_data = gpd.read_file("stations.geojson")
+    map_data = pd.read_csv("data.csv")
     map_1 = keplergl.KeplerGl()
     map_1.add_data(data=map_data)
     map_1.save_to_html(file_name="map_test.html")
