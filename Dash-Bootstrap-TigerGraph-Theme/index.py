@@ -139,63 +139,15 @@ def output_text(n_clicks, userID):
 
 
 options = ['Get Bank Info', 'Get User Info']
-# bank_options = ['Visa', 'Bank of America', 'Mastercard', 'American Express 95']
+bank_options = ['Visa', 'Bank of America', 'Mastercard', 'American Express 95']
 
 
-def getBanks():
-    q = conn.runInstalledQuery("getAllBanks", {})
-    # print(str(q))
-    results = []
-    for x in q[0]['seed']:
-        results.append(x['v_id'])
-    return dcc.Dropdown(
-        id='bank-options',
-        options=[{'label': i, 'value': i} for i in results],
-        searchable=False,
-    )
-
-
-@app.callback(Output('user-input-dropdown', 'children'), [Input('query-options-radio', 'value')])
+@app.callback(Output('bank-options', 'options'), [Input('query-options-radio', 'value')])
 def set_bank_options(selected_value):
     if selected_value == 'Get Bank Info':
-        try:
-            return getBanks()
-        except Exception as e:
-            print('error')
+        return [{'label': i, 'value': i} for i in bank_options]
     else:
         return html.P('User')
-
-
-def getBankTransactions(bank):
-    q = conn.runInstalledQuery("getBankTransactions", {'bankID': bank})
-    payments = []
-    amounts = []
-    dates = []
-    print('works1')
-    # print(q)
-    # print(q[0]['S1'][0]['v_id'])
-    for x in q[0]['S1']:
-        payments.append(x['v_id'])
-        print(x['v_id'])
-        amounts.append(x['attributes']['amount'])
-        print(x['attributes']['amount'])
-        dates.append(x['attributes']['transaction_date'])
-        print(x['attributes']['transaction_date'])
-    print('works2')
-    df = pd.DataFrame(list(zip(payments, amounts, dates)), columns=['id', 'amount', 'date'])
-    print('works3')
-    fig = px.line(df, x='date', y='amount', title='Bank Transactions')
-    print('works4')
-    fig.update_xaxes(rangeslider_visible=True)
-    return dcc.Graph(figure=fig)
-
-
-@app.callback(Output('display-bank-options', 'children'), [Input('bank-options', 'value')])
-def set_bank_users(selected_bank):
-    try:
-        return getBankTransactions(selected_bank)
-    except Exception as e:
-        return [html.Br(), html.P("Error grabbing graph data", style={'color': 'red'})]
 
 
 @app.callback(Output('bank-options', 'value'), [Input('bank-options', 'options')])
@@ -215,6 +167,7 @@ def render_page_content(pathname):
         return kepler_page
     elif pathname == "/page-5":
         return callbackPage
+
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
@@ -226,4 +179,4 @@ def render_page_content(pathname):
 
 
 if __name__ == "__main__":
-    app.run_server(port=8888)
+    app.run_server(port=8881)

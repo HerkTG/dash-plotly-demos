@@ -5,9 +5,27 @@ import dash_html_components as html
 import dash_cytoscape as cyto
 from dash.dependencies import Input, Output, State
 import pandas as pd
-from keplergl import KeplerGl
+import keplergl
+import geopandas as gpd
+import urllib.request
 # from dateutil.relativedelta import relativedelta
 from pandas.tseries.offsets import *
+
+
+url = "https://docs.mapbox.com/help/data/stations.geojson"
+download_file = urllib.request.urlretrieve(url, "stations.geojson")
+
+def make_kepler_plot():
+    map_data = gpd.read_file("stations.geojson")
+    map_1 = keplergl.KeplerGl()
+    map_1.add_data(data=map_data)
+    map_1.save_to_html(file_name="map_test.html")
+
+# make plot
+make_kepler_plot()
+
+kep_viz = html.Iframe(srcDoc = open('map_test.html').read(), height='800', width='100%')
+
 
 # df = pd.read_csv('kepler.gl-data/nyctrips/data.csv')
 # map1 = KeplerGl(height=500)
@@ -33,15 +51,16 @@ for i in dlist:
 kepler_page = html.Div(
     [
         html.H2("Kepler Visualization"),
-        dcc.RangeSlider(
-            id='datetime_RangeSlider',
-            updatemode='mouseup',  # don't let it update till mouse released
-            min=1,
-            max=15,
-            value=[maxmarks - 5, maxmarks],
-            marks=tags,
-            pushable=1,
-        )
+        kep_viz
+        # dcc.RangeSlider(
+        #     id='datetime_RangeSlider',
+        #     updatemode='mouseup',  # don't let it update till mouse released
+        #     min=1,
+        #     max=15,
+        #     value=[maxmarks - 5, maxmarks],
+        #     marks=tags,
+        #     pushable=1,
+        # )
     ]
 )
 
