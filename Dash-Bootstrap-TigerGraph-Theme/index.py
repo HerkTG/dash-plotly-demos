@@ -16,6 +16,7 @@ import src.pages.page1 as p1
 import src.pages.page2 as p2
 import src.pages.kepler_page as kepler
 import src.pages.callbackPage as callbackPage
+import src.pages.graphistry_page as graphistry
 from dash.dependencies import Input, Output, State
 
 # link fontawesome to get the chevron icons
@@ -31,6 +32,7 @@ page1 = p1.get_page1()
 page2 = p2.get_page2()
 kepler_page = kepler.get_page()
 callbackPage = callbackPage.get_page()
+graphistry_page = graphistry.get_page()
 
 
 '''
@@ -209,6 +211,8 @@ def render_page_content(pathname):
         return kepler_page
     elif pathname == "/page-5":
         return callbackPage
+    elif pathname == "/page-6":
+        return graphistry_page
 
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(

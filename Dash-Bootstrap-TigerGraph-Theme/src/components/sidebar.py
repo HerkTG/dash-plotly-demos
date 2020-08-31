@@ -30,6 +30,7 @@ sidebar = html.Div(
                 dbc.NavLink("Page 3", href="/page-3", id="page-3-link"),
                 dbc.NavLink("Kepler.gl", href="/page-4", id="page-4-link"),
                 dbc.NavLink("Callbacks", href="/page-5", id="page-5-link"),
+                dbc.NavLink("graphistry", href="/page-6", id="page-6-link"),
             ],
             vertical=True,
             pills=True,
