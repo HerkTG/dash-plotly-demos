@@ -7,19 +7,22 @@ from dash.dependencies import Input, Output, State
 # the style arguments for the sidebar. We use position:fixed and a fixed width
 SIDEBAR_STYLE = {
     "position": "fixed",
-    "top": "89px",
+    "top": 0,
     "left": 0,
     "bottom": 0,
     "width": "16rem",
-    "padding": "2rem 1rem",
+    "padding": "1.20rem 1rem",
     "background-color": "white",
 }
+tgLogoWhite = "https://info.tigergraph.com/hs-fs/hubfs/Logos/TigerGraph-whiteandgray.png?width=1545&name=TigerGraph-whiteandgray.png"
+tgLogoOrange = 'https://www.tigergraph.com/wp-content/uploads/2018/03/tigergraph-logo-2color-cropped.png'
 
 sidebar = html.Div(
     [
         # html.H2("Sidebar", className="display-4"),
-        html.H5("Dashboard"),
-        html.Hr(),
+        # html.H5("Dashboard"),
+        html.Img(src=tgLogoOrange, height='50px', width='100%'),
+        html.Hr(style={'margin-top': '1.25rem'}),
         # html.P(
         #     "A simple sidebar layout with navigation links", className="lead"
         # ),

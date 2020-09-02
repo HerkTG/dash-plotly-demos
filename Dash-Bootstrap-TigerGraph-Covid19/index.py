@@ -18,6 +18,7 @@ import src.pages.dataStatistics as p4
 import src.pages.globalView as p2
 import src.pages.about as p5
 from dash.dependencies import Input, Output, State
+from datetime import datetime
 
 # link fontawesome to get the chevron icons
 FA = "https://use.fontawesome.com/releases/v5.8.1/css/all.css"
@@ -58,45 +59,6 @@ except Exception as e:
     print('There was an error. Make sure to start your box and try again')
 
 
-def getUserInfo(userID):
-    q = conn.runInstalledQuery("getUserInfo", {'userID': userID})
-    userAccount = q[0]['S1'][0]['v_id']
-    # userEmail = q[0]['S1'][1]['v_id']
-    userEmail = ""
-    userPhone = ""
-    for x in q[0]['S1']:
-        if x['v_type'] == 'phone_number':
-            userPhone = x['v_id']
-        if x['v_type'] == 'email':
-            userEmail = x['v_id']
-    userCreatedDate = q[0]['S1'][0]['attributes']['created_date']
-    return [
-        html.Br(),
-        html.P(f"User Account Name: {userAccount}", style={'color': 'black'}),
-        html.P(f"User Account Email: {userEmail}", style={'color': 'black'}),
-        html.P(f"User Account Phone Number: {userPhone}", style={
-               'color': 'black'}),
-        html.P(f"User Account Created Date: {userCreatedDate}", style={
-               'color': 'black'}),
-    ]
-
-
-def getUserDates(bank):
-    q = conn.runInstalledQuery("getBankAccounts", {'bankName': bank})
-    userNums = []
-    userDates = []
-    count = 1
-    for x in q[0]['results']:
-        userDates.append(x['attributes']['created_date'])
-        userNums.append(count)
-        count += 1
-    df = pd.DataFrame(list(zip(userNums, userDates)),
-                      columns=['count', 'date'])
-    fig = px.line(df, x='date', y='count', title='Number of Users')
-    fig.update_xaxes(rangeslider_visible=True)
-    return dcc.Graph(figure=fig)
-
-
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
 CONTENT_STYLE = {
@@ -110,6 +72,81 @@ content = html.Div(id="page-content", style=CONTENT_STYLE)
 app.layout = html.Div([dcc.Location(id="url"), navbar, sidebar, content])
 
 
+def getPatientData(userID):
+    q = conn.runInstalledQuery("getPatientInfo", {'p': userID})
+    patientID = q[0]['Patient'][0]['v_id']
+    patientSex = q[0]['Patient'][0]['attributes']['sex']
+    patientBirthYear = q[0]['Patient'][0]['attributes']['birth_year']
+    patientAge = datetime.now().year - patientBirthYear
+    patientDeceased = False if q[0]['Patient'][0]['attributes']['deceased_date'].startswith(
+        '1970') else True
+    patientCountry = q[0]['Patient_Locations'][2]['v_id']
+    patientProvince = q[0]['Patient_Locations'][0]['v_id']
+    patientCity = q[0]['Patient_Locations'][1]['v_id']
+    return patientID, patientSex, patientAge, patientDeceased, patientBirthYear, patientCountry, patientProvince, patientCity
+
+
+def getPatientDates(userID):
+    q = conn.runInstalledQuery("getPatientTimeline", {'p': userID})
+    # print(str(q))
+    # patientDates = []
+    # patientDateLabels = []
+    divs = []
+
+    for x, y in q[0]['Seed'][0]['attributes'].items():
+        # patientDateLabels.append(x)
+        # patientDates.append(y)
+        divs.append(
+            html.H5(f"Date: {y.split(' ')[0]} ---- {x}")
+        )
+
+    for event in q[0]['results']:
+        # patientDates.append(event['attributes']['visited_date'])
+        # patientDateLabels.append(event['attributes']['travel_type'])
+        divs.append(
+            html.H5(f"Date: {event['attributes']['visited_date'].split(' ')[0]} ---- Travel Event : {event['attributes']['travel_type']}")
+        )
+
+    return divs
+
+
+@app.callback(Output('timeline-div', 'children'), [Input(component_id="input-group-button", component_property="n_clicks")], [State("input-group-button-input", "value")])
+def getPatientTimeline(n_clicks, userID):
+    if n_clicks != 0:
+        try:
+            divs = getPatientDates(userID)
+            patientTimeline = html.Div(
+                children=divs
+            )
+            return patientTimeline
+        except Exception as e:
+            return [html.Br(), html.P("Please enter Valid Patient ID", style={'color': 'red'})]
+
+
+@app.callback(Output("output-panel", "children"), [Input(component_id="input-group-button", component_property="n_clicks")], [State("input-group-button-input", "value")])
+def getPatientInfo(n_clicks, userID):
+    if n_clicks != 0:
+        try:
+            id, sex, age, deceased, birthYear, country, province, city = getPatientData(
+                userID)
+            dec = 'T' if deceased else 'F'
+            patientData = html.Div(
+                [
+                    html.H5(f'Patient ID: {id}'),
+                    html.H5(
+                        f'Sex: {sex} Age: {age} DOB: {birthYear} Deceased: {dec}'),
+                    html.H5(
+                        f'Country: {country} Province: {province} City: {city}'),
+
+                ],
+                style={'height': '100%', 'width': '100%',
+                       'padding': '5px 0 0 0'},
+            )
+            return patientData
+        except Exception as e:
+            return [html.Br(), html.P("Please enter Valid Patient ID", style={'color': 'red'})]
+
+
 # this callback uses the current pathname to set the active state of the
 # corresponding nav link to true, allowing users to tell see page they are on
 @app.callback(
@@ -121,89 +158,6 @@ def toggle_active_links(pathname):
         # Treat page 1 as the homepage / index
         return True, False, False, False, False
     return [pathname == f"/page-{i}" for i in range(1, 6)]
-
-
-@app.callback(Output("userIdOutput", "children"), [Input(component_id="userIdSubmit", component_property="n_clicks")], [State("userId", "value")])
-def output_text(n_clicks, userID):
-    if n_clicks != 0:
-        try:
-            # df = pd.DataFrame(q[0]['S1'])
-            # print(q[0]['S1'][0]['attributes']['created_date'])
-            # value = q[0]['S1'][0]['attributes']['created_date']
-            # return dash_table.DataTable(
-            #     id='table',
-            #     columns=[{'name': i, "id": i} for i in df.columns],
-            #     data=df.to_dict('records'),
-            # )
-            # return getUserInfo(userID)
-            return getUserDates(userID)
-        except Exception as e:
-            return [html.Br(), html.P("Please enter Valid Patient ID", style={'color': 'red'})]
-    else:
-        return
-
-
-options = ['Get Bank Info', 'Get User Info']
-# bank_options = ['Visa', 'Bank of America', 'Mastercard', 'American Express 95']
-
-
-def getBanks():
-    q = conn.runInstalledQuery("getAllBanks", {})
-    # print(str(q))
-    results = []
-    for x in q[0]['seed']:
-        results.append(x['v_id'])
-    return dcc.Dropdown(
-        id='bank-options',
-        options=[{'label': i, 'value': i} for i in results],
-        searchable=False,
-    )
-
-
-@app.callback(Output('user-input-dropdown', 'children'), [Input('query-options-radio', 'value')])
-def set_bank_options(selected_value):
-    if selected_value == 'Get Bank Info':
-        try:
-            return getBanks()
-        except Exception as e:
-            print('error')
-    else:
-        return html.P('User')
-
-
-def getBankTransactions(bank):
-    q = conn.runInstalledQuery("getBankTransactions", {'bankID': bank})
-    payments = []
-    amounts = []
-    dates = []
-
-    # print(q)
-    # print(q[0]['S1'][0]['v_id'])
-    for x in q[0]['S1']:
-        payments.append(x['v_id'])
-        amounts.append(x['attributes']['amount'])
-        dates.append(x['attributes']['transaction_date'])
-
-    df = pd.DataFrame(list(zip(payments, amounts, dates)),
-                      columns=['id', 'amount', 'date'])
-
-    fig = px.line(df, x='date', y='amount', title='Bank Transactions')
-
-    fig.update_xaxes(rangeslider_visible=True)
-    return dcc.Graph(figure=fig)
-
-
-@app.callback(Output('display-bank-options', 'children'), [Input('bank-options', 'value')])
-def set_bank_users(selected_bank):
-    try:
-        return getBankTransactions(selected_bank)
-    except Exception as e:
-        return [html.Br(), html.P("Error grabbing graph data", style={'color': 'red'})]
-
-
-@app.callback(Output('bank-options', 'value'), [Input('bank-options', 'options')])
-def set_bank_value(available_options):
-    return available_options[0]['value']
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
