@@ -73,7 +73,7 @@ page = html.Div(
                                 dbc.InputGroup(
                                     [
                                         dbc.Input(
-                                            id='input-group-button-input', placeholder='Enter Info', value=""),
+                                            id='input-group-button-input', placeholder='Enter Info', value="4100000006"),
                                         dbc.InputGroupAddon(
                                             dbc.Button(
                                                 'Submit', id='input-group-button', n_clicks=0),
@@ -129,7 +129,7 @@ page = html.Div(
                     ),
                     width=4,
                     style={'width': '100%', 'height': '750px',
-                           "border-style": "solid"}
+                           "border-style": "solid", "overflow": "scroll", 'padding': '10px 10px 10px 20px'}
                 ),
             ],
         ),

@@ -17,8 +17,12 @@ import src.pages.mapExplore as p3
 import src.pages.dataStatistics as p4
 import src.pages.globalView as p2
 import src.pages.about as p5
+import connect
 from dash.dependencies import Input, Output, State
 from datetime import datetime
+import operator
+import keplergl
+import os
 
 # link fontawesome to get the chevron icons
 FA = "https://use.fontawesome.com/releases/v5.8.1/css/all.css"
@@ -40,24 +44,7 @@ aboutView = p5.get_page()
 TigerGraph Connection Parameters:
 '''
 
-hostname = "https://tigerdashcovid.i.tgcloud.io"
-username = "tigergraph"
-graphname = "MyGraph"
-password = "tigergraph"
-# conn = None
-try:
-    conn = tg.TigerGraphConnection(host=hostname,
-                                   graphname=graphname,
-                                   username=username,
-                                   password=password,
-                                   useCert=True)
-    secret = conn.createSecret()
-    token = conn.getToken(secret, setToken=True)
-
-    # print(conn.gsql('ls'))
-except Exception as e:
-    print('There was an error. Make sure to start your box and try again')
-
+conn = connect.getConnection()
 
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
@@ -70,6 +57,33 @@ CONTENT_STYLE = {
 content = html.Div(id="page-content", style=CONTENT_STYLE)
 
 app.layout = html.Div([dcc.Location(id="url"), navbar, sidebar, content])
+
+
+def generateKeplerMap():
+    q = conn.runInstalledQuery("getAllTravel")
+    df = pd.json_normalize(q[0]['Seed'])
+    print(df)
+    map_1 = keplergl.KeplerGl()
+    map_1.add_data(data=df)
+    if not os.path.isfile('Dash-Bootstrap-TigerGraph-Covid19/covid_map.html'):
+        map_1.save_to_html(file_name="covid_map.html")
+    else:
+        os.remove('Dash-Bootstrap-TigerGraph-Covid19/covid_map.html')
+        map_1.save_to_html(file_name="covid_map.html")
+
+    kep_viz = html.Iframe(srcDoc=open('covid_map.html').read(),
+                          height='800', width='100%')
+    return kep_viz
+
+
+@app.callback(Output('output-map', 'children'), [Input(component_id="map-button", component_property="n_clicks")])
+def generateMap(n_clicks):
+    if n_clicks > 0:
+        try:
+            map = generateMap()
+            return map
+        except Exception as e:
+            return [html.Br(), html.P("Uh oh", style={'color': 'red'})]
 
 
 def getPatientData(userID):
@@ -92,20 +106,48 @@ def getPatientDates(userID):
     # patientDates = []
     # patientDateLabels = []
     divs = []
+    dates = []
 
     for x, y in q[0]['Seed'][0]['attributes'].items():
         # patientDateLabels.append(x)
         # patientDates.append(y)
-        divs.append(
-            html.H5(f"Date: {y.split(' ')[0]} ---- {x}")
-        )
+        date = y.split(' ')[0].split('-')
+        if date[0] != '1970':
+            dates.append([date[1], date[2], f"covid-19 | {x}", 'fa fa-medkit fa-lg', 'red'])
+        # divs.append(
+        #     html.H5(f"Date: {y.split(' ')[0]} ---- {x}")
+        # )
 
     for event in q[0]['results']:
         # patientDates.append(event['attributes']['visited_date'])
         # patientDateLabels.append(event['attributes']['travel_type'])
+        date = event['attributes']['visited_date'].split(' ')[0].split('-')
+        if date[0] != '1970':
+            dates.append([date[1], date[2], f"travel event | {event['attributes']['travel_type']}", 'fa fa-plane fa-lg', 'black'])
+        # divs.append(
+        #     html.H5(f"Date: {event['attributes']['visited_date'].split(' ')[0]} ---- Travel Event : {event['attributes']['travel_type']}")
+        # )
+    dates.sort(key=operator.itemgetter(0, 1))
+    # print(dates)
+    for x in dates:
+        # print(x[0], x[1])
+        # f"Date: 2020-{x[0]}-{x[1]}"
         divs.append(
-            html.H5(f"Date: {event['attributes']['visited_date'].split(' ')[0]} ---- Travel Event : {event['attributes']['travel_type']}")
+            dbc.Row(
+                [
+                    html.I(
+                        className=f"{x[3]}",
+                        style={'margin-left': '5px', 'margin-right': '5px', 'color': f"{x[4]}"},
+                    ),
+                    html.H5(
+                        f"2020-{x[0]}-{x[1]} | {x[2]}",
+                        # style={'color': f"{x[4]}"}
+                    )
+                ]
+            )
+
         )
+        divs.append(html.Hr(style={'margin': '0 0 1.24rem 0'}))
 
     return divs
 
@@ -184,4 +226,4 @@ def render_page_content(pathname):
 
 
 if __name__ == "__main__":
-    app.run_server(port=8881)
+    app.run_server(port=8881, debug=True, dev_tools_hot_reload=True)

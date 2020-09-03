@@ -28,11 +28,45 @@ sidebar = html.Div(
         # ),
         dbc.Nav(
             [
-                dbc.NavLink("Patient", href="/page-1", id="page-1-link"),
-                dbc.NavLink("Global", href="/page-2", id="page-2-link"),
-                dbc.NavLink("Map", href="/page-3", id="page-3-link"),
-                dbc.NavLink("Data", href="/page-4", id="page-4-link"),
-                dbc.NavLink("About", href="/page-5", id="page-5-link"),
+                dbc.NavLink(
+                    [
+                        html.I(className="fa fa-id-card"),
+                        " Patient",
+                    ],
+                    href="/page-1", id="page-1-link"
+                ),
+                dbc.NavLink(
+                    [
+                        html.I(className="fa fa-globe"),
+                        "  Global",
+                    ],
+                    href="/page-2", id="page-2-link"
+                ),
+                # dbc.NavLink("Global", href="/page-2", id="page-2-link"),
+                dbc.NavLink(
+                    [
+                        html.I(className="fa fa-map"),
+                        "  Map",
+                    ],
+                    href="/page-3", id="page-3-link"
+                ),
+                # dbc.NavLink("Map", href="/page-3", id="page-3-link"),
+                dbc.NavLink(
+                    [
+                        html.I(className="fa fa-database"),
+                        "  Data",
+                    ],
+                    href="/page-4", id="page-4-link"
+                ),
+                # dbc.NavLink("Data", href="/page-4", id="page-4-link"),
+                dbc.NavLink(
+                    [
+                        html.I(className="fa fa-info-circle"),
+                        "  About",
+                    ],
+                    href="/page-5", id="page-5-link"
+                ),
+                # dbc.NavLink("About", href="/page-5", id="page-5-link"),
             ],
             vertical=True,
             pills=True,

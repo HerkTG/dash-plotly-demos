@@ -8,30 +8,77 @@ import pandas as pd
 import keplergl
 import geopandas as gpd
 import urllib.request
+import os
+import connect
 # from dateutil.relativedelta import relativedelta
 from pandas.tseries.offsets import *
 
 
-url = "https://raw.githubusercontent.com/uber-web/kepler.gl-data/master/earthquakes/data.csv"
-download_file = urllib.request.urlretrieve(url, "data.csv")
+# url = "https://raw.githubusercontent.com/uber-web/kepler.gl-data/master/earthquakes/data.csv"
+# download_file = urllib.request.urlretrieve(url, "data.csv")
+#
+#
+conn = connect.getConnection()
+config = {
+    'version': 'v1',
+    'config': {
+        'mapState': {
+            'latitude': 35.9078,
+            'longitude': 127.7669,
+            'zoom': 6
+        },
+        'mapStyle': {
+            'styleType': 'light'
+        },
+        'visState': {
+            'layers': [{
+                'type': 'hexagonId',
+                # 'visualChannels': {
+                #     'sizeField': {
+                #         'type': 'integer',
+                #         'name': 'value'
+                #     },
+                # },
+                'config': {
+                    'dataId': 'covid',
+                    'color': [255, 0, 0]
+                }
+            }],
+            'filters': [{
+                'dataId': 'covid',
+                'name': 'attributes.visited_date',
+            }],
+        }
+    }
+}
+
 
 def make_kepler_plot():
-    map_data = pd.read_csv("data.csv")
+    q = conn.runInstalledQuery("getAllTravel")
+    df = pd.json_normalize(q[0]['Seed'])
+    print(df)
     map_1 = keplergl.KeplerGl()
-    map_1.add_data(data=map_data)
-    map_1.save_to_html(file_name="map_test.html")
+    map_1.add_data(data=df, name='covid')
+    map_1.config = config
+    map_1.save_to_html(file_name="covid_map.html")
+
 
 # make plot
-make_kepler_plot()
+if not os.path.isfile('Dash-Bootstrap-TigerGraph-Covid19/covid_map.html'):
+    make_kepler_plot()
 
-kep_viz = html.Iframe(srcDoc = open('map_test.html').read(), height='800', width='100%')
+kep_viz = html.Iframe(srcDoc=open('covid_map.html').read(),
+                      height='800', width='100%')
 
 kepler_page = html.Div(
     [
         html.H2("Kepler Visualization"),
+        # dbc.Button('Submit', id='map-button', n_clicks=0),
+        # html.Div(
+        #     id='output-map'
+        # )
         kep_viz
-
-    ]
+    ],
 )
 
 
