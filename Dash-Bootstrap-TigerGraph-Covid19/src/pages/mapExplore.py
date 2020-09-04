@@ -41,7 +41,7 @@ config = {
                 # },
                 'config': {
                     'dataId': 'covid',
-                    'color': [255, 0, 0]
+                    'color': [255, 0, 255]
                 }
             }],
             'filters': [{

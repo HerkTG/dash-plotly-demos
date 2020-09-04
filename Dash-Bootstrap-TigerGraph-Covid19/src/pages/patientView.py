@@ -5,62 +5,62 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_cytoscape as cyto
 
-myGraph = cyto.Cytoscape(
-    id='cytoscape-compound',
-    layout={'name': 'preset'},
-    style={'width': '100%', 'height': '100%'},
-    stylesheet=[
-        {
-            'selector': 'node',
-            'style': {'content': 'data(label)'}
-        },
-        {
-            'selector': '.countries',
-            'style': {'width': 5}
-        },
-        {
-            'selector': '.cities',
-            'style': {'line-style': 'dashed'}
-        }
-    ],
-    elements=[
-        # Parent Nodes
-        {
-            'data': {'id': 'us', 'label': 'United States'}
-        },
-        {
-            'data': {'id': 'can', 'label': 'Canada'}
-        },
-
-        # Children Nodes
-        {
-            'data': {'id': 'nyc', 'label': 'New York', 'parent': 'us'},
-            'position': {'x': 100, 'y': 100}
-        },
-        {
-            'data': {'id': 'sf', 'label': 'San Francisco', 'parent': 'us'},
-            'position': {'x': 100, 'y': 200}
-        },
-        {
-            'data': {'id': 'mtl', 'label': 'Montreal', 'parent': 'can'},
-            'position': {'x': 400, 'y': 100}
-        },
-
-        # Edges
-        {
-            'data': {'source': 'can', 'target': 'us'},
-            'classes': 'countries'
-        },
-        {
-            'data': {'source': 'nyc', 'target': 'sf'},
-            'classes': 'cities'
-        },
-        {
-            'data': {'source': 'sf', 'target': 'mtl'},
-            'classes': 'cities'
-        }
-    ]
-),
+# myGraph = cyto.Cytoscape(
+#     id='cytoscape-compound',
+#     layout={'name': 'preset'},
+#     style={'width': '100%', 'height': '100%'},
+#     stylesheet=[
+#         {
+#             'selector': 'node',
+#             'style': {'content': 'data(label)'}
+#         },
+#         {
+#             'selector': '.countries',
+#             'style': {'width': 5}
+#         },
+#         {
+#             'selector': '.cities',
+#             'style': {'line-style': 'dashed'}
+#         }
+#     ],
+#     elements=[
+#         # Parent Nodes
+#         {
+#             'data': {'id': 'us', 'label': 'United States'}
+#         },
+#         {
+#             'data': {'id': 'can', 'label': 'Canada'}
+#         },
+#
+#         # Children Nodes
+#         {
+#             'data': {'id': 'nyc', 'label': 'New York', 'parent': 'us'},
+#             'position': {'x': 100, 'y': 100}
+#         },
+#         {
+#             'data': {'id': 'sf', 'label': 'San Francisco', 'parent': 'us'},
+#             'position': {'x': 100, 'y': 200}
+#         },
+#         {
+#             'data': {'id': 'mtl', 'label': 'Montreal', 'parent': 'can'},
+#             'position': {'x': 400, 'y': 100}
+#         },
+#
+#         # Edges
+#         {
+#             'data': {'source': 'can', 'target': 'us'},
+#             'classes': 'countries'
+#         },
+#         {
+#             'data': {'source': 'nyc', 'target': 'sf'},
+#             'classes': 'cities'
+#         },
+#         {
+#             'data': {'source': 'sf', 'target': 'mtl'},
+#             'classes': 'cities'
+#         }
+#     ]
+# ),
 
 page = html.Div(
     [
@@ -89,14 +89,14 @@ page = html.Div(
                                     dbc.Col(
                                         # html.Img(
                                         #     src='https://banner2.cleanpng.com/20180329/zue/kisspng-computer-icons-user-profile-person-5abd85306ff7f7.0592226715223698404586.jpg', height='150px'),
-                                        width=4,
+                                        width=3,
                                         style={"border-style": "solid"},
                                     ),
                                     dbc.Col(
                                         html.Div(
                                             id='output-panel',
                                         ),
-                                        width=8,
+                                        width=9,
                                         style={"border-style": "solid"},
                                     ),
                                 ],
@@ -104,16 +104,44 @@ page = html.Div(
                                        'margin-bottom': '10px', "border-style": "solid"}
                             ),
                             dbc.Row(
-                                html.Div(
-                                    "Test",
-                                    style={"height": "100%"},
-                                ),
+                                [
+                                    dbc.Col(
+                                        # id='travel-counter-div',
+                                        html.Div(
+                                            id='travel-counter-div',
+                                            style={'text-align': 'center', 'vertical-align': 'middle', 'width': '100%', 'height': '100%', "border-style": "solid"},
+                                        ),
+                                        width=3,
+                                    ),
+                                    dbc.Col(
+                                        html.Div(
+                                            id='contact-counter-div',
+                                            style={'text-align': 'center', 'vertical-align': 'middle', 'width': '100%', 'height': '100%', "border-style": "solid"},
+                                        ),
+                                        width=3,
+                                    ),
+                                    dbc.Col(
+                                        html.Div(
+                                            id='infection-counter-div',
+                                            style={'text-align': 'center', 'vertical-align': 'middle', 'width': '100%', 'height': '100%', "border-style": "solid"},
+                                        ),
+                                        width=3,
+                                    ),
+                                    dbc.Col(
+                                        html.Div(
+                                            id='risk-score-div',
+                                            style={'text-align': 'center', 'vertical-align': 'middle', 'width': '100%', 'height': '100%', "border-style": "solid"},
+                                        ),
+                                        width=3,
+                                    ),
+                                ],
+                                no_gutters=False,
                                 style={'width': '100%', 'height': '150px',
                                        'margin-bottom': '10px', "border-style": "solid"}
                             ),
                             dbc.Row(
                                 html.Div(
-                                    myGraph,
+                                    id='subgraph-div',
                                     style={"height": "100%", 'width': '100%'},
                                 ),
                                 style={'width': '100%', 'height': '375px',
@@ -129,7 +157,7 @@ page = html.Div(
                     ),
                     width=4,
                     style={'width': '100%', 'height': '750px',
-                           "border-style": "solid", "overflow": "scroll", 'padding': '10px 10px 10px 20px'}
+                           "border-style": "solid", "overflowY": "auto", "overflowX": "hidden", 'padding': '10px 10px 10px 20px'}
                 ),
             ],
         ),

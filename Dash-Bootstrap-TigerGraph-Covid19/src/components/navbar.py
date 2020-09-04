@@ -66,7 +66,7 @@ navbar = dbc.NavbarSimple(
     color='#ef6c00',
     dark=False,
     fluid=True,
-    # sticky='top',
+    # fixed='top',
 )
 
 

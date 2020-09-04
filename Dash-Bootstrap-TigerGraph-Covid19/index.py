@@ -6,6 +6,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
+import dash_cytoscape as cyto
 import src.components.navbar as nb
 import src.components.sidebar as sb
 import pyTigerGraph as tg
@@ -62,7 +63,7 @@ app.layout = html.Div([dcc.Location(id="url"), navbar, sidebar, content])
 def generateKeplerMap():
     q = conn.runInstalledQuery("getAllTravel")
     df = pd.json_normalize(q[0]['Seed'])
-    print(df)
+    # print(df)
     map_1 = keplergl.KeplerGl()
     map_1.add_data(data=df)
     if not os.path.isfile('Dash-Bootstrap-TigerGraph-Covid19/covid_map.html'):
@@ -113,7 +114,8 @@ def getPatientDates(userID):
         # patientDates.append(y)
         date = y.split(' ')[0].split('-')
         if date[0] != '1970':
-            dates.append([date[1], date[2], f"covid-19 | {x}", 'fa fa-medkit fa-lg', 'red'])
+            dates.append(
+                [date[1], date[2], f"covid-19 | {x}", 'fa fa-medkit fa-lg', 'red'])
         # divs.append(
         #     html.H5(f"Date: {y.split(' ')[0]} ---- {x}")
         # )
@@ -123,7 +125,8 @@ def getPatientDates(userID):
         # patientDateLabels.append(event['attributes']['travel_type'])
         date = event['attributes']['visited_date'].split(' ')[0].split('-')
         if date[0] != '1970':
-            dates.append([date[1], date[2], f"travel event | {event['attributes']['travel_type']}", 'fa fa-plane fa-lg', 'black'])
+            dates.append(
+                [date[1], date[2], f"travel event | {event['attributes']['travel_type']}", 'fa fa-plane fa-lg', 'black'])
         # divs.append(
         #     html.H5(f"Date: {event['attributes']['visited_date'].split(' ')[0]} ---- Travel Event : {event['attributes']['travel_type']}")
         # )
@@ -137,7 +140,8 @@ def getPatientDates(userID):
                 [
                     html.I(
                         className=f"{x[3]}",
-                        style={'margin-left': '5px', 'margin-right': '5px', 'color': f"{x[4]}"},
+                        style={'margin-left': '5px',
+                               'margin-right': '5px', 'color': f"{x[4]}"},
                     ),
                     html.H5(
                         f"2020-{x[0]}-{x[1]} | {x[2]}",
@@ -152,7 +156,50 @@ def getPatientDates(userID):
     return divs
 
 
-@app.callback(Output('timeline-div', 'children'), [Input(component_id="input-group-button", component_property="n_clicks")], [State("input-group-button-input", "value")])
+def getPatientStats(userID):
+    q = conn.runInstalledQuery("getPatientStats", {'p': userID})
+    return [q[0]['TRAVEL_COUNT'], q[0]['CONTACT_COUNT'], q[0]['INFECTION_COUNT'], q[0]['RISK_SCORE']]
+
+
+@app.callback([Output('travel-counter-div', 'children'), Output('contact-counter-div', 'children'), Output('infection-counter-div', 'children'), Output('risk-score-div', 'children')], [Input(component_id="input-group-button", component_property="n_clicks")], [State("input-group-button-input", "value")])
+def getpatientStats(n_clicks, userID):
+    if n_clicks != 0:
+        try:
+            results = getPatientStats(userID)
+            return [html.Div(
+                [
+                    html.P('Travel Events'),
+                    html.Br(),
+                    html.H2(results[0]),
+
+                ],
+            ),
+                html.Div(
+                [
+                    html.P('People Encountered'),
+                    html.Br(),
+                    html.H2(results[1]),
+                ]
+            ),
+                html.Div(
+                [
+                    html.P('People Infected'),
+                    html.Br(),
+                    html.H2(results[2]),
+                ]
+            ),
+                html.Div(
+                [
+                    html.P('Risk Score'),
+                    html.Br(),
+                    html.H2(results[3]),
+                ]
+            )]
+        except Exception as e:
+            return html.P("Error", style={'color': 'red'}), html.P("Error", style={'color': 'red'}), html.P("Error", style={'color': 'red'}), html.P("Error", style={'color': 'red'})
+
+
+@ app.callback(Output('timeline-div', 'children'), [Input(component_id="input-group-button", component_property="n_clicks")], [State("input-group-button-input", "value")])
 def getPatientTimeline(n_clicks, userID):
     if n_clicks != 0:
         try:
@@ -172,14 +219,44 @@ def getPatientInfo(n_clicks, userID):
             id, sex, age, deceased, birthYear, country, province, city = getPatientData(
                 userID)
             dec = 'T' if deceased else 'F'
+            sex = sex.upper()
             patientData = html.Div(
                 [
-                    html.H5(f'Patient ID: {id}'),
-                    html.H5(
-                        f'Sex: {sex} Age: {age} DOB: {birthYear} Deceased: {dec}'),
-                    html.H5(
-                        f'Country: {country} Province: {province} City: {city}'),
+                    # dbc.Row(
+                    #     [
+                    #         html.H6('Patient ID :'),
+                    #         html.P(f'{id}')
+                    #     ],
+                    #     style={'text-align': 'center'}
+                    # ),
+                    # dbc.Row(
+                    #     [
+                    #         html.B('Sex :'),
+                    #         html.P(f'{sex} '),
+                    #         html.B('Age :'),
+                    #         html.P(f'{age} '),
+                    #         html.B('DOB :'),
+                    #         html.P(f'{birthYear} '),
+                    #         html.B('Deceased :'),
+                    #         html.P(f'{dec}'),
+                    #     ],
+                    # ),
+                    # dbc.Row(
+                    #     [
+                    #         html.B('Country :'),
+                    #         html.P(f'{country} '),
+                    #         html.B('Province :'),
+                    #         html.P(f'{province} '),
+                    #         html.B('City :'),
+                    #         html.P(f'{city} '),
+                    #     ],
+                    # )
 
+                    html.P(f'Patient ID: {id}'),
+                    html.P(
+                        f'Sex: {sex} Age: {age} DOB: {birthYear} Deceased: {dec}'),
+                    html.P(
+                        f'Country: {country} Province: {province} City: {city}'),
                 ],
                 style={'height': '100%', 'width': '100%',
                        'padding': '5px 0 0 0'},
@@ -187,6 +264,50 @@ def getPatientInfo(n_clicks, userID):
             return patientData
         except Exception as e:
             return [html.Br(), html.P("Please enter Valid Patient ID", style={'color': 'red'})]
+
+
+def getPatientSubgraph(userID):
+    q = conn.runInstalledQuery("infectionSubgraph", {'p': userID})
+    # print(q)
+    nodes = []
+    edges = []
+    for data in q[0]['@@edgeSet']:
+        nodes.append(
+            {'data':
+             {'id': data['from_id'], 'label': data['from_type']}
+             }
+        )
+        nodes.append(
+            {'data':
+             {'id': data['to_id'], 'label': data['to_type']}
+             }
+        )
+        edges.append(
+            {'data':
+             {'source': data['from_id'], 'target': data['to_id']}
+             }
+        )
+    # elements = list(nodes) + list(edges)
+    elements = nodes + edges
+    return elements
+
+
+@app.callback(Output("subgraph-div", "children"), [Input(component_id="input-group-button", component_property="n_clicks")], [State("input-group-button-input", "value")])
+def getpatientSubgraph(n_clicks, userID):
+    if n_clicks != 0:
+        try:
+            elements = getPatientSubgraph(userID)
+            graph = cyto.Cytoscape(
+                id='patient-infection-subgraph',
+                elements=elements,
+                style={'width': '100%', 'height': '100%'},
+                layout={
+                    'name': 'cose'
+                }
+            )
+            return graph
+        except Exception as e:
+            return [html.Br(), html.P("Error", style={'color': 'red'})]
 
 
 # this callback uses the current pathname to set the active state of the
