@@ -1,9 +1,10 @@
 import pyTigerGraph as tg
+from config import host, un, graph, pw 
 
-hostname = "https://tigerdashcovid.i.tgcloud.io"
-username = "tigergraph"
-graphname = "MyGraph"
-password = "tigergraph"
+hostname = host
+username = un
+graphname = graph
+password = pw
 conn = None
 try:
     conn = tg.TigerGraphConnection(host=hostname,
