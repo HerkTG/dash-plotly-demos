@@ -1,5 +1,5 @@
 import pyTigerGraph as tg
-from config import host, un, graph, pw 
+from config import host, un, graph, pw
 
 hostname = host
 username = un

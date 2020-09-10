@@ -56,7 +56,7 @@ config = {
 def make_kepler_plot():
     q = conn.runInstalledQuery("getAllTravel")
     df = pd.json_normalize(q[0]['Seed'])
-    print(df)
+    # print(df)
     map_1 = keplergl.KeplerGl()
     map_1.add_data(data=df, name='covid')
     map_1.config = config

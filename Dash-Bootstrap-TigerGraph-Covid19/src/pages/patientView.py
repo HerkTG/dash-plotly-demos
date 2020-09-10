@@ -5,63 +5,6 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_cytoscape as cyto
 
-# myGraph = cyto.Cytoscape(
-#     id='cytoscape-compound',
-#     layout={'name': 'preset'},
-#     style={'width': '100%', 'height': '100%'},
-#     stylesheet=[
-#         {
-#             'selector': 'node',
-#             'style': {'content': 'data(label)'}
-#         },
-#         {
-#             'selector': '.countries',
-#             'style': {'width': 5}
-#         },
-#         {
-#             'selector': '.cities',
-#             'style': {'line-style': 'dashed'}
-#         }
-#     ],
-#     elements=[
-#         # Parent Nodes
-#         {
-#             'data': {'id': 'us', 'label': 'United States'}
-#         },
-#         {
-#             'data': {'id': 'can', 'label': 'Canada'}
-#         },
-#
-#         # Children Nodes
-#         {
-#             'data': {'id': 'nyc', 'label': 'New York', 'parent': 'us'},
-#             'position': {'x': 100, 'y': 100}
-#         },
-#         {
-#             'data': {'id': 'sf', 'label': 'San Francisco', 'parent': 'us'},
-#             'position': {'x': 100, 'y': 200}
-#         },
-#         {
-#             'data': {'id': 'mtl', 'label': 'Montreal', 'parent': 'can'},
-#             'position': {'x': 400, 'y': 100}
-#         },
-#
-#         # Edges
-#         {
-#             'data': {'source': 'can', 'target': 'us'},
-#             'classes': 'countries'
-#         },
-#         {
-#             'data': {'source': 'nyc', 'target': 'sf'},
-#             'classes': 'cities'
-#         },
-#         {
-#             'data': {'source': 'sf', 'target': 'mtl'},
-#             'classes': 'cities'
-#         }
-#     ]
-# ),
-
 page = html.Div(
     [
         dbc.Row(
@@ -82,26 +25,32 @@ page = html.Div(
                                     ],
                                 ),
                                 style={'width': '100%', 'height': '50px',
-                                       'margin-bottom': '5px'}
+                                       'margin-bottom': '5px'},
                             ),
+                            html.H3('Patient Information'),
                             dbc.Row(
                                 [
                                     dbc.Col(
                                         # html.Img(
                                         #     src='https://banner2.cleanpng.com/20180329/zue/kisspng-computer-icons-user-profile-person-5abd85306ff7f7.0592226715223698404586.jpg', height='150px'),
+                                        html.Div(
+                                            style={"background-color": "#424242", 'width': '100%', 'height': '100%'},
+                                        ),
                                         width=3,
-                                        style={"border-style": "solid"},
+                                        # style={'padding-right': '10px'}
                                     ),
                                     dbc.Col(
                                         html.Div(
                                             id='output-panel',
+                                            style={"background-color": "#f8f9fa", 'width': '100%', 'height': '100%'},
                                         ),
                                         width=9,
-                                        style={"border-style": "solid"},
+                                        # style={'padding-left': '10px'}
+
                                     ),
                                 ],
                                 style={'width': '100%', 'height': '150px',
-                                       'margin-bottom': '10px', "border-style": "solid"}
+                                       'margin-bottom': '10px'}
                             ),
                             dbc.Row(
                                 [
@@ -109,55 +58,64 @@ page = html.Div(
                                         # id='travel-counter-div',
                                         html.Div(
                                             id='travel-counter-div',
-                                            style={'text-align': 'center', 'vertical-align': 'middle', 'width': '100%', 'height': '100%', "border-style": "solid"},
+                                            style={'text-align': 'center', 'vertical-align': 'middle',
+                                                   'width': '100%', 'height': '100%', "background-color": "#f8f9fa",
+                                                   'margin-right': '10px'},
                                         ),
                                         width=3,
                                     ),
                                     dbc.Col(
                                         html.Div(
                                             id='contact-counter-div',
-                                            style={'text-align': 'center', 'vertical-align': 'middle', 'width': '100%', 'height': '100%', "border-style": "solid"},
+                                            style={'text-align': 'center', 'vertical-align': 'middle',
+                                                   'width': '100%', 'height': '100%', "background-color": "#f8f9fa",
+                                                   'margin-right': '10px', 'margin-left': '10px'},
                                         ),
                                         width=3,
                                     ),
                                     dbc.Col(
                                         html.Div(
                                             id='infection-counter-div',
-                                            style={'text-align': 'center', 'vertical-align': 'middle', 'width': '100%', 'height': '100%', "border-style": "solid"},
+                                            style={'text-align': 'center', 'vertical-align': 'middle',
+                                                   'width': '100%', 'height': '100%', "background-color": "#f8f9fa",
+                                                   'margin-right': '10px', 'margin-left': '10px'},
                                         ),
                                         width=3,
                                     ),
                                     dbc.Col(
                                         html.Div(
                                             id='risk-score-div',
-                                            style={'text-align': 'center', 'vertical-align': 'middle', 'width': '100%', 'height': '100%', "border-style": "solid"},
+                                            style={'text-align': 'center', 'vertical-align': 'middle',
+                                                   'width': '100%', 'height': '100%', "background-color": "#f8f9fa",
+                                                   'margin-left': '10px'},
                                         ),
                                         width=3,
                                     ),
                                 ],
-                                no_gutters=False,
                                 style={'width': '100%', 'height': '150px',
-                                       'margin-bottom': '10px', "border-style": "solid"}
+                                       'margin-bottom': '10px'}
                             ),
                             dbc.Row(
                                 html.Div(
                                     id='subgraph-div',
-                                    style={"height": "100%", 'width': '100%'},
+                                    style={"height": "100%", 'width': '100%', "background-color": "#f8f9fa"},
                                 ),
-                                style={'width': '100%', 'height': '375px',
-                                       "border-style": "solid"}
+                                style={'width': '100%', 'height': '375px'}
                             ),
                         ],
                     ),
                     width=8,
                 ),
                 dbc.Col(
-                    html.Div(
-                        id='timeline-div',
-                    ),
+                    [
+                        html.H3('Patient Timeline'),
+                        html.Div(
+                            id='timeline-div',
+                        ),
+                    ],
                     width=4,
                     style={'width': '100%', 'height': '750px',
-                           "border-style": "solid", "overflowY": "auto", "overflowX": "hidden", 'padding': '10px 10px 10px 20px'}
+                           "background-color": "#f8f9fa", "overflowY": "auto", "overflowX": "hidden", 'padding': '10px 10px 10px 20px'}
                 ),
             ],
         ),
