@@ -1,0 +1,7 @@
+# Rename to "config.py"
+host = ""
+un = ""
+graph = ""
+pw = ""
+graphistry_un = ""
+graphistry_pw = ""

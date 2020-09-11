@@ -62,7 +62,6 @@ navbar = dbc.NavbarSimple(
     brand="Covid-19 Dashboard",
     style={'margin-left': '16rem'},
     brand_href="#",
-    # color="#ef6c00",
     color='#ef6c00',
     dark=False,
     fluid=True,

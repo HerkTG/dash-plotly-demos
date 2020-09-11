@@ -326,11 +326,11 @@ def toggle_active_links(pathname):
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname in ["/", "/page-1"]:
-        return html.P(patientView)
+        return patientView
     elif pathname == "/page-2":
-        return html.P(globalView)
+        return globalView
     elif pathname == "/page-3":
-        return html.P(mapView)
+        return mapView
     elif pathname == "/page-4":
         return dataView
     elif pathname == "/page-5":
